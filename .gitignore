@@ -1,41 +1,472 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# ============================================================================
+# GIRLPOWER TASK MANAGEMENT - COMPLETE .GITIGNORE
+# Next.js 15 + TypeScript + Tailwind CSS v4
+# ============================================================================
 
-# dependencies
-/node_modules
+# ============================================================================
+# DEPENDENCIES
+# ============================================================================
+node_modules/
 /.pnp
+.pnp.js
 .pnp.*
+
+# Yarn
 .yarn/*
+!.yarn/cache
 !.yarn/patches
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
+.yarn/install-state.gz
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/cache
 
-# testing
-/coverage
+# pnpm
+.pnpm-debug.log*
+.pnpm-store/
 
-# next.js
+# npm
+.npm
+package-lock.json  # Uncomment if using yarn/pnpm exclusively
+
+# Bower
+bower_components
+
+# ============================================================================
+# NEXT.JS BUILD OUTPUT
+# ============================================================================
 /.next/
 /out/
+.next/
+next-env.d.ts
 
-# production
-/build
+# Turbo (Next.js build cache)
+.turbo
 
-# misc
-.DS_Store
-*.pem
+# Static export
+/dist/
+/build/
 
-# debug
+# Next.js cache
+.next/cache/
+
+# ============================================================================
+# ENVIRONMENT VARIABLES & SECRETS
+# ============================================================================
+.env
+.env.*
+.env.local
+.env.development
+.env.development.local
+.env.test
+.env.test.local
+.env.production
+.env.production.local
+.env.backup
+.env.*.backup
+
+# Secrets & credentials
+**/secrets.json
+**/credentials.json
+**/*-secret-*.json
+**/*.key
+**/*.pem
+**/*.p12
+**/*.pfx
+.secrets/
+
+# API keys
+api-keys.json
+firebase-config.json
+
+# ============================================================================
+# VERCEL
+# ============================================================================
+.vercel
+.vercel/
+.vercel.json  # Remove this line if you want to commit vercel.json config
+
+# Vercel build output
+.vercel/output/
+
+# ============================================================================
+# TYPESCRIPT
+# ============================================================================
+*.tsbuildinfo
+.tsbuildinfo
+next-env.d.ts
+
+# Type checking cache
+*.tsbuildinfo
+.types/
+
+# ============================================================================
+# TESTING
+# ============================================================================
+/coverage
+/coverage/
+*.lcov
+.nyc_output
+/test-results/
+/playwright-report/
+/playwright/.cache/
+
+# Jest
+jest-coverage/
+.jest-cache/
+
+# Cypress
+cypress/videos/
+cypress/screenshots/
+cypress/downloads/
+
+# ============================================================================
+# IDE - VSCODE
+# ============================================================================
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/*.code-snippets
+.history/
+.history
+*.code-workspace
+
+# VSCode workspace settings (if contains sensitive paths)
+# .vscode/settings.json
+
+# ============================================================================
+# IDE - WEBSTORM / INTELLIJ
+# ============================================================================
+.idea/
+*.iml
+*.iws
+*.ipr
+.idea_modules/
+out/
+.idea/**/workspace.xml
+.idea/**/tasks.xml
+.idea/**/usage.statistics.xml
+.idea/**/dictionaries
+.idea/**/shelf
+.idea/**/contentModel.xml
+.idea/**/dataSources/
+.idea/**/dataSources.ids
+.idea/**/dataSources.local.xml
+.idea/**/sqlDataSources.xml
+.idea/**/dynamic.xml
+.idea/**/uiDesigner.xml
+.idea/**/dbnavigator.xml
+
+# ============================================================================
+# IDE - SUBLIME TEXT
+# ============================================================================
+*.sublime-project
+*.sublime-workspace
+*.tmlanguage.cache
+*.tmPreferences.cache
+*.stTheme.cache
+.sublime/
+
+# ============================================================================
+# IDE - ECLIPSE
+# ============================================================================
+.classpath
+.project
+.settings/
+*.launch
+.c9/
+
+# ============================================================================
+# LOGS
+# ============================================================================
+logs/
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+lerna-debug.log*
 .pnpm-debug.log*
+pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# Runtime logs
+pids/
+*.pid
+*.seed
+*.pid.lock
 
-# vercel
-.vercel
+# Diagnostic reports
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
-# typescript
-*.tsbuildinfo
-next-env.d.ts
+# ============================================================================
+# OPERATING SYSTEMS
+# ============================================================================
+
+# macOS
+.DS_Store
+.DS_Store?
+.AppleDouble
+.LSOverride
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+Icon
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# ============================================================================
+# TEMPORARY FILES
+# ============================================================================
+*.tmp
+*.temp
+*.swp
+*.swo
+*.bak
+*.backup
+*~
+*.cache
+.sass-cache/
+.temp/
+temp/
+tmp/
+
+# ============================================================================
+# RUNTIME DATA
+# ============================================================================
+pids
+*.pid
+*.seed
+*.pid.lock
+lib-cov
+
+# ============================================================================
+# DATABASES
+# ============================================================================
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+*.db-shm
+*.db-wal
+
+# Local database files
+/prisma/*.db
+/prisma/*.db-journal
+
+# ============================================================================
+# CACHE & BUILD ARTIFACTS
+# ============================================================================
+.cache/
+.parcel-cache/
+.npm
+.eslintcache
+.stylelintcache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+.node_repl_history
+*.tgz
+
+# Webpack
+.webpack/
+
+# Rollup
+.rollup.cache/
+
+# ============================================================================
+# UPLOADS & USER GENERATED CONTENT
+# ============================================================================
+/public/uploads/
+/public/temp/
+/public/cache/
+uploads/
+user-uploads/
+
+# ============================================================================
+# DOCUMENTATION BUILDS
+# ============================================================================
+/docs/.vitepress/dist
+/docs/.vitepress/cache
+.docusaurus/
+
+# Storybook
+.storybook-static/
+storybook-static/
+.out/
+
+# ============================================================================
+# ANALYTICS & MONITORING
+# ============================================================================
+.sentryclirc
+.sentry/
+
+# Lighthouse
+lighthouserc.json
+.lighthouseci/
+
+# ============================================================================
+# PYTHON (for utility scripts)
+# ============================================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+ENV/
+env/
+env.bak/
+venv.bak/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# ============================================================================
+# MISCELLANEOUS
+# ============================================================================
+*.orig
+*.rej
+.tern-port
+.vuepress/dist
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Archives
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# ============================================================================
+# PROJECT-SPECIFIC FILES
+# ============================================================================
+
+# File collection scripts (from your project)
+collected_files_content.txt
+collect_files.py
+
+# Generated documentation
+/docs/generated/
+
+# Local development overrides
+local.config.js
+local.config.ts
+
+# Design files (uncomment if not needed in repo)
+# *.sketch
+# *.fig
+# *.xd
+# *.psd
+
+# Backup files
+*_backup.*
+*.orig
+
+# ============================================================================
+# SECURITY & CERTIFICATES
+# ============================================================================
+*.pem
+*.key
+*.cert
+*.crt
+*.cer
+*.p12
+*.pfx
+
+# SSL certificates
+ssl/
+certs/
+certificates/
+
+# ============================================================================
+# PACKAGE MANAGER LOCKS
+# ============================================================================
+# Choose ONE package manager and keep ONLY its lock file
+# Uncomment the locks you DON'T want to track:
+
+# If using npm (keep package-lock.json):
+# yarn.lock
+# pnpm-lock.yaml
+
+# If using yarn (keep yarn.lock):
+# package-lock.json
+# pnpm-lock.yaml
+
+# If using pnpm (keep pnpm-lock.yaml):
+# package-lock.json
+# yarn.lock
+
+# ============================================================================
+# OPTIONAL - UNCOMMENT IF NEEDED
+# ============================================================================
+
+# Large media files (if not using Git LFS)
+# *.mp4
+# *.mov
+# *.avi
+# *.mkv
+# *.pdf
+# *.psd
+
+# Source maps (if you don't want them in production)
+# *.map
+# **/*.map
+
+# Service worker files (if generated)
+# sw.js
+# workbox-*.js
+
+# PWA files
+# public/sw.js
+# public/workbox-*.js
+
+# Sitemaps (if auto-generated)
+# public/sitemap.xml
+# public/robots.txt
+
+# ============================================================================
+# KEEP THESE FILES (DO NOT IGNORE)
+# ============================================================================
+# !.vscode/settings.json (if you want shared settings)
+# !.vscode/tasks.json
+# !.vscode/launch.json
+# !.vscode/extensions.json
+# !.gitkeep (for empty directories)
+# !*.config.js (configuration files)
+# !*.config.ts
