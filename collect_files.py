@@ -3,7 +3,7 @@
 File Contents Collector
 This script reads all files in the current directory and subdirectories,
 then saves their contents to a single text file with file path information.
-Excludes node_modules and other common dependency directories.
+Excludes node_modules, common dependency directories, and non-essential config files.
 """
 
 import os
@@ -26,8 +26,30 @@ EXCLUDED_DIRS = {
     '.next',
     '.nuxt',
     'vendor',
-    'target',
-    '.next'
+    'target'
+}
+
+# Specific files to exclude (non-essential configuration and generated files)
+EXCLUDED_FILES = {
+    # Auto-generated files
+    'next-env.d.ts',
+    
+    # Configuration files (can be regenerated)
+    'eslint.config.mjs',
+    'postcss.config.mjs',
+    'tsconfig.json',
+    'next.config.ts',
+    
+    # Lock files (too large, not needed for code review)
+    'package-lock.json',
+    'yarn.lock',
+    'pnpm-lock.yaml',
+    
+    # Utility scripts
+    'collect_files.py',
+    
+    # Output file
+    'collected_files_content.txt'
 }
 
 def is_text_file(file_path):
@@ -42,7 +64,7 @@ def is_text_file(file_path):
         '.c', '.cpp', '.h', '.hpp', '.cs', '.rb', '.go', '.rs', '.swift',
         '.kt', '.scala', '.pl', '.r', '.m', '.lua', '.vim', '.ini', '.cfg',
         '.conf', '.log', '.dockerfile', '.gitignore', '.gitattributes', '.ts',
-        '.tsx', '.jsx', '.vue', '.svelte'
+        '.tsx', '.jsx', '.vue', '.svelte', '.mjs', '.cjs'
     }
     
     file_path = Path(file_path)
@@ -76,10 +98,16 @@ def should_exclude_path(path, base_path):
     except ValueError:
         return False
 
+def should_exclude_file(file_path):
+    """
+    Check if a specific file should be excluded based on EXCLUDED_FILES.
+    """
+    return file_path.name in EXCLUDED_FILES
+
 def collect_files(directory_path):
     """
     Recursively collect all files from the directory and subdirectories,
-    excluding specified directories.
+    excluding specified directories and files.
     Returns a list of file paths.
     """
     files = []
@@ -88,8 +116,8 @@ def collect_files(directory_path):
     try:
         for item in directory.rglob('*'):
             if item.is_file():
-                # Skip if in excluded directory
-                if not should_exclude_path(item, directory):
+                # Skip if in excluded directory or is an excluded file
+                if not should_exclude_path(item, directory) and not should_exclude_file(item):
                     files.append(item)
     except PermissionError as e:
         print(f"Permission denied accessing: {e}")
@@ -115,6 +143,16 @@ def read_file_content(file_path):
     
     return "[Binary file or unsupported encoding]"
 
+def format_file_size(size_bytes):
+    """
+    Format file size in human-readable format.
+    """
+    for unit in ['bytes', 'KB', 'MB', 'GB']:
+        if size_bytes < 1024.0:
+            return f"{size_bytes:.2f} {unit}"
+        size_bytes /= 1024.0
+    return f"{size_bytes:.2f} TB"
+
 def main():
     """
     Main function to collect and save file contents.
@@ -122,17 +160,19 @@ def main():
     current_dir = Path.cwd()
     output_file = current_dir / "collected_files_content.txt"
     
-    print(f"Collecting files from: {current_dir}")
-    print(f"Excluding directories: {', '.join(sorted(EXCLUDED_DIRS))}")
-    print(f"Output will be saved to: {output_file}")
+    print("=" * 80)
+    print("FILE CONTENTS COLLECTOR")
+    print("=" * 80)
+    print(f"\nCollecting files from: {current_dir}")
+    print(f"\nExcluding directories: {', '.join(sorted(EXCLUDED_DIRS))}")
+    print(f"\nExcluding files: {', '.join(sorted(EXCLUDED_FILES))}")
+    print(f"\nOutput will be saved to: {output_file}\n")
+    print("=" * 80)
     
     # Collect all files
     all_files = collect_files(current_dir)
     
-    # Filter out the output file itself to avoid infinite loop
-    files_to_process = [f for f in all_files if f != output_file]
-    
-    print(f"Found {len(files_to_process)} files to process...")
+    print(f"\nFound {len(all_files)} files to process...\n")
     
     # Create the output file
     try:
@@ -140,28 +180,36 @@ def main():
             # Write header
             out_file.write("=" * 80 + "\n")
             out_file.write("FILE CONTENTS COLLECTION\n")
+            out_file.write("=" * 80 + "\n")
             out_file.write(f"Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
             out_file.write(f"Source directory: {current_dir}\n")
-            out_file.write(f"Excluded directories: {', '.join(sorted(EXCLUDED_DIRS))}\n")
-            out_file.write(f"Total files processed: {len(files_to_process)}\n")
+            out_file.write(f"Total files processed: {len(all_files)}\n")
+            out_file.write("\n" + "-" * 80 + "\n")
+            out_file.write("EXCLUDED DIRECTORIES:\n")
+            out_file.write(", ".join(sorted(EXCLUDED_DIRS)) + "\n")
+            out_file.write("\n" + "-" * 80 + "\n")
+            out_file.write("EXCLUDED FILES:\n")
+            out_file.write(", ".join(sorted(EXCLUDED_FILES)) + "\n")
             out_file.write("=" * 80 + "\n\n")
             
             processed_count = 0
             skipped_count = 0
+            total_size = 0
             
-            for file_path in files_to_process:
+            for file_path in all_files:
                 relative_path = file_path.relative_to(current_dir)
+                file_size = file_path.stat().st_size
                 
                 # Check if it's likely a text file
                 if is_text_file(file_path):
-                    print(f"Processing: {relative_path}")
+                    print(f"✓ Processing: {relative_path}")
                     
                     # Write file header
-                    out_file.write("\n" + "=" * 60 + "\n")
+                    out_file.write("\n" + "=" * 80 + "\n")
                     out_file.write(f"FILE: {relative_path}\n")
-                    out_file.write(f"FULL PATH: {file_path}\n")
-                    out_file.write(f"SIZE: {file_path.stat().st_size} bytes\n")
-                    out_file.write("=" * 60 + "\n\n")
+                    out_file.write(f"PATH: {file_path}\n")
+                    out_file.write(f"SIZE: {format_file_size(file_size)}\n")
+                    out_file.write("=" * 80 + "\n\n")
                     
                     # Read and write file content
                     content = read_file_content(file_path)
@@ -169,28 +217,34 @@ def main():
                     out_file.write("\n\n")
                     
                     processed_count += 1
+                    total_size += file_size
                 else:
-                    print(f"Skipping binary file: {relative_path}")
+                    print(f"⊗ Skipping binary file: {relative_path}")
                     skipped_count += 1
             
             # Write summary
             out_file.write("\n" + "=" * 80 + "\n")
-            out_file.write("SUMMARY\n")
+            out_file.write("COLLECTION SUMMARY\n")
             out_file.write("=" * 80 + "\n")
             out_file.write(f"Files processed: {processed_count}\n")
             out_file.write(f"Files skipped (binary): {skipped_count}\n")
-            out_file.write(f"Total files found: {len(files_to_process)}\n")
-            out_file.write(f"Output saved to: {output_file}\n")
+            out_file.write(f"Total files found: {len(all_files)}\n")
+            out_file.write(f"Total content size: {format_file_size(total_size)}\n")
+            out_file.write(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
             out_file.write("=" * 80 + "\n")
     
     except Exception as e:
-        print(f"Error creating output file: {e}")
+        print(f"\n✗ Error creating output file: {e}")
         sys.exit(1)
     
-    print(f"\nCompleted successfully!")
-    print(f"Processed: {processed_count} files")
-    print(f"Skipped: {skipped_count} binary files")
-    print(f"Output saved to: {output_file}")
+    print("\n" + "=" * 80)
+    print("COLLECTION COMPLETE")
+    print("=" * 80)
+    print(f"\n✓ Processed: {processed_count} files")
+    print(f"⊗ Skipped: {skipped_count} binary files")
+    print(f"📁 Total size: {format_file_size(total_size)}")
+    print(f"💾 Output saved to: {output_file}\n")
+    print("=" * 80)
 
 if __name__ == "__main__":
     main()

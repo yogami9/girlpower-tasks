@@ -67,10 +67,10 @@ export default function AnalyticsDashboard() {
   ];
 
   const programPerformance = [
-    { name: 'STEM Workshop Series', completion: 85, tasks: 12, color: 'bg-purple-600' },
-    { name: 'Mentorship Program', completion: 72, tasks: 20, color: 'bg-blue-600' },
-    { name: 'Leadership Training', completion: 90, tasks: 10, color: 'bg-green-600' },
-    { name: 'Community Outreach', completion: 45, tasks: 15, color: 'bg-orange-600' },
+    { name: 'Ndoto', completion: 85, tasks: 12, color: 'bg-purple-600' },
+    { name: 'Sports for Health', completion: 72, tasks: 20, color: 'bg-blue-600' },
+    { name: 'Dadas', completion: 90, tasks: 10, color: 'bg-green-600' },
+    { name: 'AYP-SRHR Champions', completion: 45, tasks: 15, color: 'bg-orange-600' },
   ];
 
   const teamActivity = [
