@@ -6,6 +6,8 @@ import { Task, TaskStatus, TaskPriority } from '@/types';
 import { getStatusColor, getPriorityColor } from '@/utils/helpers';
 import { useAuth } from '@/context/AuthContext';
 import { canEditTask, canDeleteTask } from '@/types/auth';
+import TaskForm from './TaskForm';
+import { programs as allPrograms } from '@/data/mockData';
 
 interface RoleBasedTasksViewProps {
   initialTasks: Task[];
@@ -25,6 +27,8 @@ export default function RoleBasedTasksView({ initialTasks, programs }: RoleBased
   const [filterProgram, setFilterProgram] = useState('');
   const [filterStatus, setFilterStatus] = useState<TaskStatus | ''>('');
   const [filterPriority, setFilterPriority] = useState<TaskPriority | ''>('');
+  const [showForm, setShowForm] = useState(false);
+  const [editingTask, setEditingTask] = useState<ExtendedTask | undefined>();
 
   // Filter tasks based on user role
   const getVisibleTasks = () => {
@@ -49,20 +53,42 @@ export default function RoleBasedTasksView({ initialTasks, programs }: RoleBased
 
   const filteredTasks = getVisibleTasks();
 
-  const handleCreateTask = () => {
-    if (!hasPermission('canCreateTask')) {
-      alert('You do not have permission to create tasks');
-      return;
-    }
-    alert('Task creation form would open here');
+  const handleCreateTask = (newTask: Partial<Task>) => {
+    if (!user) return;
+
+    const taskWithMetadata: ExtendedTask = {
+      id: Date.now().toString(),
+      title: newTask.title || '',
+      status: newTask.status || 'pending',
+      program: newTask.program || '',
+      assignee: newTask.assignee || '',
+      dueDate: newTask.dueDate || '',
+      priority: newTask.priority || 'medium',
+      description: newTask.description || '',
+      createdBy: user.id,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    setTasks(prev => [...prev, taskWithMetadata]);
+    setShowForm(false);
   };
 
-  const handleEditTask = (task: ExtendedTask) => {
+  const handleUpdateTask = (updatedTask: Partial<Task>) => {
+    setTasks(prev => prev.map(t => 
+      t.id === updatedTask.id ? { ...t, ...updatedTask, updatedAt: new Date().toISOString() } : t
+    ));
+    setEditingTask(undefined);
+    setShowForm(false);
+  };
+
+  const handleEditClick = (task: ExtendedTask) => {
     if (!canEditTask(user, task.createdBy)) {
       alert('You do not have permission to edit this task');
       return;
     }
-    alert(`Editing task: ${task.title}`);
+    setEditingTask(task);
+    setShowForm(true);
   };
 
   const handleDeleteTask = (task: ExtendedTask) => {
@@ -133,7 +159,10 @@ export default function RoleBasedTasksView({ initialTasks, programs }: RoleBased
           )}
           {hasPermission('canCreateTask') && (
             <button
-              onClick={handleCreateTask}
+              onClick={() => {
+                setEditingTask(undefined);
+                setShowForm(true);
+              }}
               className="flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"
             >
               <Plus size={20} />
@@ -292,7 +321,7 @@ export default function RoleBasedTasksView({ initialTasks, programs }: RoleBased
                           </button>
                           {canEdit ? (
                             <button
-                              onClick={() => handleEditTask(task)}
+                              onClick={() => handleEditClick(task)}
                               className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                               title="Edit task"
                             >
@@ -366,6 +395,19 @@ export default function RoleBasedTasksView({ initialTasks, programs }: RoleBased
           <div className="text-sm text-gray-600">Overdue</div>
         </div>
       </div>
+
+      {/* Task Form Modal */}
+      {showForm && (
+        <TaskForm
+          onClose={() => {
+            setShowForm(false);
+            setEditingTask(undefined);
+          }}
+          onSave={editingTask ? handleUpdateTask : handleCreateTask}
+          programs={programs}
+          task={editingTask}
+        />
+      )}
     </div>
   );
 }
