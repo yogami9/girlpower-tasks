@@ -1,4 +1,4 @@
-// src/components/tasks/RoleBasedTasksView.tsx - Tasks with Role Permissions
+// src/components/tasks/RoleBasedTasksView.tsx - FIXED TYPE ERROR
 
 'use client';
 
@@ -88,6 +88,12 @@ export default function RoleBasedTasksView({ initialTasks, programs }: RoleBased
     console.log('Exporting tasks...');
   };
 
+  // FIX: Helper function to safely get role display text
+  const getRoleDisplay = () => {
+    if (!user?.role) return 'User';
+    return user.role.charAt(0).toUpperCase() + user.role.slice(1);
+  };
+
   return (
     <div className="space-y-6">
       {/* Header with Role Badge */}
@@ -100,7 +106,7 @@ export default function RoleBasedTasksView({ initialTasks, programs }: RoleBased
               isStaff ? 'bg-blue-100 text-blue-700' :
               'bg-pink-100 text-pink-700'
             }`}>
-              {user?.role.charAt(0).toUpperCase() + user?.role.slice(1)}
+              {getRoleDisplay()}
             </span>
           </div>
           <p className="text-gray-600">
