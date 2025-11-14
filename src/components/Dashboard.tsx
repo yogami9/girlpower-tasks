@@ -6,7 +6,7 @@ import StatCard from './dashboard/StatCard';
 import ProgramProgress from './dashboard/ProgramProgress';
 import RecentActivity from './dashboard/RecentActivity';
 import UpcomingDeadlines from './dashboard/UpcomingDeadlines';
-import { stats, programs, tasks } from '@/data/mockData';
+import { programs, tasks } from '@/data/mockData';
 import { useAuth } from '@/context/AuthContext';
 
 export default function Dashboard() {

@@ -17,7 +17,7 @@ import { useAuth } from '@/context/AuthContext';
 import { tasks, programs } from '@/data/mockData';
 
 function MainApp() {
-  const { isAdmin, isStaff, isVolunteer, hasPermission } = useAuth();
+  const { isAdmin, isStaff, hasPermission } = useAuth();
   const [currentView, setCurrentView] = useState<ViewType>('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
@@ -42,7 +42,7 @@ function MainApp() {
         return (
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-8 text-center">
             <h3 className="text-lg font-semibold text-yellow-900 mb-2">Access Restricted</h3>
-            <p className="text-yellow-700">You don't have permission to view reports. Please contact your administrator.</p>
+            <p className="text-yellow-700">You don&apos;t have permission to view reports. Please contact your administrator.</p>
           </div>
         );
       
@@ -54,7 +54,7 @@ function MainApp() {
         return (
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-8 text-center">
             <h3 className="text-lg font-semibold text-yellow-900 mb-2">Access Restricted</h3>
-            <p className="text-yellow-700">You don't have permission to view analytics. Please contact your administrator.</p>
+            <p className="text-yellow-700">You don&apos;t have permission to view analytics. Please contact your administrator.</p>
           </div>
         );
       

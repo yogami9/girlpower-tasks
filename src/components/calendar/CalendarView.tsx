@@ -123,7 +123,7 @@ export default function CalendarView({ tasks }: CalendarViewProps) {
         <div className="bg-pink-50 border border-pink-200 rounded-lg p-4 flex items-start gap-3">
           <Info className="text-pink-600 flex-shrink-0 mt-0.5" size={20} />
           <div className="text-sm text-pink-800">
-            <strong>Volunteer View:</strong> You're seeing only your assigned tasks. Contact your supervisor if you need to view team schedules.
+            <strong>Volunteer View:</strong> You&apos;re seeing only your assigned tasks. Contact your supervisor if you need to view team schedules.
           </div>
         </div>
       )}
