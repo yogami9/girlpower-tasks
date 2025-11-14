@@ -1,7 +1,7 @@
-// src/app/layout.tsx - FIXED
 import type { Metadata } from 'next';
 import './globals.css';
 import { organization } from '@/data/organizationData';
+import { Providers } from './providers';
 
 export const metadata: Metadata = {
   title: `${organization.name} - Task Management System`,
@@ -47,22 +47,24 @@ export default function RootLayout({
         <meta name="theme-color" content="#9333ea" />
       </head>
       <body className="antialiased">
-        {/* Accessibility Skip Link */}
-        <a 
-          href="#main-content" 
-          className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-purple-600 text-white px-4 py-2 rounded-lg z-50"
-        >
-          Skip to main content
-        </a>
-        
-        <main id="main-content">
-          {children}
-        </main>
-        
-        {/* Footer Note */}
-        <div className="fixed bottom-0 right-0 p-2 text-xs text-gray-500 bg-white/80 backdrop-blur-sm rounded-tl-lg">
-          © 2025 {organization.shortName} • v2.0.0
-        </div>
+        <Providers>
+          {/* Accessibility Skip Link */}
+          <a 
+            href="#main-content" 
+            className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-purple-600 text-white px-4 py-2 rounded-lg z-50"
+          >
+            Skip to main content
+          </a>
+          
+          <main id="main-content">
+            {children}
+          </main>
+          
+          {/* Footer Note */}
+          <div className="fixed bottom-0 right-0 p-2 text-xs text-gray-500 bg-white/80 backdrop-blur-sm rounded-tl-lg">
+            © 2025 {organization.shortName} • v2.0.0
+          </div>
+        </Providers>
       </body>
     </html>
   );

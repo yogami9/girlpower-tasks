@@ -1,4 +1,3 @@
-// src/app/page.tsx - Updated with new features
 'use client';
 
 import React, { useState } from 'react';
@@ -12,9 +11,10 @@ import ReportsView from '@/components/reports/ReportsView';
 import AnalyticsDashboard from '@/components/analytics/AnalyticsDashboard';
 import CalendarView from '@/components/calendar/CalendarView';
 import NotificationPanel from '@/components/notifications/NotificationPanel';
+import ProtectedRoute from '@/components/ProtectedRoute';
 import { tasks, programs } from '@/data/mockData';
 
-export default function GirlPowerTaskSystem() {
+function MainApp() {
   const [currentView, setCurrentView] = useState<ViewType>('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
@@ -62,5 +62,13 @@ export default function GirlPowerTaskSystem() {
         onClose={() => setNotificationsOpen(false)}
       />
     </div>
+  );
+}
+
+export default function GirlPowerTaskSystem() {
+  return (
+    <ProtectedRoute>
+      <MainApp />
+    </ProtectedRoute>
   );
 }
