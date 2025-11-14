@@ -1,12 +1,24 @@
+// src/services/auth.ts
 import { apiService } from './api';
 
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+}
+
+interface LoginResponse {
+  token: string;
+  user: User;
+}
+
 export const authService = {
-  login: async (email: string, password: string) => {
+  login: async (email: string, password: string): Promise<LoginResponse> => {
     // Mock authentication for demo
-    // In production, this would call your actual API
     if (email && password) {
       const mockToken = 'mock-jwt-token-' + Date.now();
-      const mockUser = {
+      const mockUser: User = {
         id: '1',
         name: 'Admin User',
         email: email,
@@ -14,7 +26,9 @@ export const authService = {
       };
       
       apiService.setToken(mockToken);
-      localStorage.setItem('user', JSON.stringify(mockUser));
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('user', JSON.stringify(mockUser));
+      }
       
       return { token: mockToken, user: mockUser };
     }
@@ -26,16 +40,19 @@ export const authService = {
     email: string;
     password: string;
   }) => {
-    // Mock registration
     return apiService.post('/auth/register', data);
   },
 
   logout: () => {
     apiService.clearToken();
-    localStorage.removeItem('user');
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('user');
+    }
   },
 
-  getCurrentUser: async () => {
+  getCurrentUser: async (): Promise<User | null> => {
+    if (typeof window === 'undefined') return null;
+    
     const userStr = localStorage.getItem('user');
     if (userStr) {
       return JSON.parse(userStr);
