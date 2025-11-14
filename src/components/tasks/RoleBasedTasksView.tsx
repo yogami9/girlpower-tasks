@@ -7,7 +7,6 @@ import { getStatusColor, getPriorityColor } from '@/utils/helpers';
 import { useAuth } from '@/context/AuthContext';
 import { canEditTask, canDeleteTask } from '@/types/auth';
 import TaskForm from './TaskForm';
-import { programs as allPrograms } from '@/data/mockData';
 
 interface RoleBasedTasksViewProps {
   initialTasks: Task[];

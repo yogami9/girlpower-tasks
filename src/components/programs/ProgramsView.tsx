@@ -1,457 +1,522 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Plus, Search, Users, School, Heart, Target, X, TrendingUp, Calendar, Edit, Trash2 } from 'lucide-react';
-import { programs as initialPrograms } from '@/data/mockData';
-import { organization } from '@/data/organizationData';
-import { Program } from '@/types';
-import { useAuth } from '@/context/AuthContext';
-import ProgramForm from './ProgramForm';
+import React, { useState, useEffect } from 'react';
+import { X, Save, FolderOpen, Users, Target, MapPin, Calendar, FileText, AlertCircle } from 'lucide-react';
+import { Program, ProgramCategory } from '@/types';
 
-interface ProgramCardProps {
-  program: Program;
-  onSelect: (program: Program) => void;
-  onViewDetails: (program: Program) => void;
-  onEdit: (program: Program) => void;
-  onDelete: (program: Program) => void;
-  canEdit: boolean;
+interface ProgramFormProps {
+  onClose: () => void;
+  onSave: (program: Partial<Program>) => void;
+  program?: Program;
 }
 
-function ProgramCard({ program, onSelect, onViewDetails, onEdit, onDelete, canEdit }: ProgramCardProps) {
-  const getCategoryIcon = (category: string) => {
-    switch (category) {
-      case 'Education': return <School size={24} className="text-purple-600" />;
-      case 'Health': return <Heart size={24} className="text-pink-600" />;
-      case 'Advocacy': return <Users size={24} className="text-blue-600" />;
-      case 'Service Delivery': return <Target size={24} className="text-green-600" />;
-      default: return <Target size={24} className="text-gray-600" />;
-    }
-  };
+const PROGRAM_CATEGORIES: ProgramCategory[] = [
+  'Education',
+  'Empowerment',
+  'Health',
+  'Advocacy',
+  'Service Delivery',
+  'Community Engagement'
+];
 
-  const getCategoryColor = (category: string) => {
-    switch (category) {
-      case 'Education': return 'border-purple-200 bg-purple-50';
-      case 'Health': return 'border-pink-200 bg-pink-50';
-      case 'Advocacy': return 'border-blue-200 bg-blue-50';
-      case 'Service Delivery': return 'border-green-200 bg-green-50';
-      default: return 'border-gray-200 bg-gray-50';
-    }
-  };
+const SUB_COUNTIES = [
+  'Tongaren',
+  'Kimilili',
+  'Webuye East',
+  'Mt. Elgon',
+  'Ndalu',
+  'Mbakalo',
+  'Bumula',
+  'Kanduyi',
+  'Sirisia'
+];
 
-  return (
-    <div className={`bg-white rounded-lg shadow hover:shadow-xl transition-all p-6 border-2 ${getCategoryColor(program.category)}`}>
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex items-center gap-3">
-          {getCategoryIcon(program.category)}
-          <div>
-            <h3 className="text-xl font-semibold text-gray-800">{program.name}</h3>
-            <span className="text-xs font-medium text-gray-600 bg-white px-2 py-1 rounded-full">
-              {program.category}
-            </span>
-          </div>
-        </div>
-        {canEdit && (
-          <div className="flex gap-2">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onEdit(program);
-              }}
-              className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-              title="Edit program"
-            >
-              <Edit size={16} />
-            </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete(program);
-              }}
-              className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-              title="Delete program"
-            >
-              <Trash2 size={16} />
-            </button>
-          </div>
-        )}
-      </div>
+export default function ProgramForm({ onClose, onSave, program }: ProgramFormProps) {
+  const isEditing = !!program;
 
-      <p className="text-gray-600 text-sm mb-4 line-clamp-2">{program.description}</p>
-
-      {/* Program Stats */}
-      <div className="grid grid-cols-2 gap-3 mb-4">
-        <div className="bg-white rounded-lg p-3 border border-gray-200">
-          <div className="text-2xl font-bold text-gray-800">{program.completedTasks}</div>
-          <div className="text-xs text-gray-600">Tasks Completed</div>
-        </div>
-        <div className="bg-white rounded-lg p-3 border border-gray-200">
-          <div className="text-2xl font-bold text-purple-600">{program.progress}%</div>
-          <div className="text-xs text-gray-600">Progress</div>
-        </div>
-      </div>
-
-      {/* Progress Bar */}
-      <div className="mb-4">
-        <div className="w-full bg-gray-200 rounded-full h-2">
-          <div
-            className="bg-purple-600 h-2 rounded-full transition-all duration-300"
-            style={{ width: `${program.progress}%` }}
-          />
-        </div>
-      </div>
-
-      {/* Sub-programs if any */}
-      {program.subPrograms && program.subPrograms.length > 0 && (
-        <div className="mb-4">
-          <div className="text-xs font-medium text-gray-600 mb-2">Sub-Programs:</div>
-          <div className="flex flex-wrap gap-1">
-            {program.subPrograms.map((sub: string, idx: number) => (
-              <span key={idx} className="text-xs bg-white text-gray-700 px-2 py-1 rounded-full border border-gray-200">
-                {sub}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Partner Info */}
-      {program.partners && program.partners.length > 0 && (
-        <div className="mb-4 p-2 bg-white rounded border border-gray-200">
-          <div className="text-xs text-gray-600">Partnership with:</div>
-          <div className="text-sm font-medium text-gray-800">{program.partners.join(', ')}</div>
-        </div>
-      )}
-
-      {/* Target Info */}
-      {program.goal && (
-        <div className="mb-4 p-2 bg-yellow-50 rounded border border-yellow-200">
-          <div className="text-xs font-medium text-yellow-800">
-            🎯 Target: {program.goal}
-          </div>
-        </div>
-      )}
-
-      {/* Action Buttons */}
-      <div className="flex gap-2">
-        <button
-          onClick={() => onViewDetails(program)}
-          className="flex-1 bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition-colors font-medium"
-        >
-          View Details →
-        </button>
-        <button
-          onClick={() => onSelect(program)}
-          className="px-4 py-2 border border-purple-600 text-purple-600 rounded-lg hover:bg-purple-50 transition-colors font-medium"
-        >
-          <Plus size={20} />
-        </button>
-      </div>
-    </div>
-  );
-}
-
-export default function ProgramsView() {
-  const { hasPermission } = useAuth();
-  const [programs, setPrograms] = useState<Program[]>(initialPrograms);
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedProgram, setSelectedProgram] = useState<Program | null>(null);
-  const [showProgramForm, setShowProgramForm] = useState(false);
-  const [editingProgram, setEditingProgram] = useState<Program | undefined>();
-
-  const categories = ['All', 'Education', 'Health', 'Advocacy', 'Service Delivery', 'Community Engagement', 'Empowerment'];
-
-  const filteredPrograms = programs.filter(program => {
-    const matchesCategory = !selectedCategory || selectedCategory === 'All' || program.category === selectedCategory;
-    const matchesSearch = program.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         program.description.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesCategory && matchesSearch;
+  const [formData, setFormData] = useState({
+    name: program?.name || '',
+    description: program?.description || '',
+    category: program?.category || 'Education' as ProgramCategory,
+    targetAudience: program?.targetAudience || '',
+    location: program?.location || '',
+    goal: program?.goal || '',
+    startDate: program?.startDate || '',
+    endDate: program?.endDate || '',
+    budget: program?.budget?.toString() || '',
+    partners: program?.partners?.join(', ') || '',
+    keyActivities: program?.keyActivities?.join('\n') || '',
+    subPrograms: program?.subPrograms?.join(', ') || '',
+    teamMembers: program?.teamMembers?.join(', ') || '',
   });
 
-  const handleCreateProgram = (programData: Partial<Program>) => {
-    const newProgram: Program = {
-      id: Date.now().toString(),
-      name: programData.name!,
-      description: programData.description!,
-      category: programData.category!,
-      progress: 0,
-      tasks: 0,
-      completedTasks: 0,
-      ...programData,
-    };
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-    setPrograms(prev => [...prev, newProgram]);
-    setShowProgramForm(false);
-    alert(`Program "${newProgram.name}" created successfully!`);
+  // Auto-save draft
+  useEffect(() => {
+    if (!isEditing && typeof window !== 'undefined') {
+      const timer = setTimeout(() => {
+        localStorage.setItem('program_draft', JSON.stringify(formData));
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [formData, isEditing]);
+
+  const validate = (): boolean => {
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.name.trim()) {
+      newErrors.name = 'Program name is required';
+    } else if (formData.name.length < 3) {
+      newErrors.name = 'Program name must be at least 3 characters';
+    }
+
+    if (!formData.description.trim()) {
+      newErrors.description = 'Description is required';
+    } else if (formData.description.length < 20) {
+      newErrors.description = 'Description must be at least 20 characters';
+    }
+
+    if (!formData.targetAudience.trim()) {
+      newErrors.targetAudience = 'Target audience is required';
+    }
+
+    if (formData.startDate && formData.endDate) {
+      if (new Date(formData.startDate) > new Date(formData.endDate)) {
+        newErrors.endDate = 'End date must be after start date';
+      }
+    }
+
+    if (formData.budget && isNaN(Number(formData.budget))) {
+      newErrors.budget = 'Budget must be a valid number';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
-  const handleUpdateProgram = (programData: Partial<Program>) => {
-    setPrograms(prev => prev.map(p => 
-      p.id === editingProgram?.id ? { ...p, ...programData } : p
-    ));
-    setEditingProgram(undefined);
-    setShowProgramForm(false);
-    alert('Program updated successfully!');
-  };
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    setTouched({
+      name: true,
+      description: true,
+      targetAudience: true,
+    });
 
-  const handleDeleteProgram = (program: Program) => {
-    if (confirm(`Are you sure you want to delete "${program.name}"? This action cannot be undone.`)) {
-      setPrograms(prev => prev.filter(p => p.id !== program.id));
-      alert('Program deleted successfully!');
+    if (!validate()) {
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const programData: Partial<Program> = {
+        ...program,
+        name: formData.name,
+        description: formData.description,
+        category: formData.category,
+        targetAudience: formData.targetAudience,
+        location: formData.location || undefined,
+        goal: formData.goal || undefined,
+        startDate: formData.startDate || undefined,
+        endDate: formData.endDate || undefined,
+        budget: formData.budget ? Number(formData.budget) : undefined,
+        partners: formData.partners ? formData.partners.split(',').map(p => p.trim()).filter(Boolean) : undefined,
+        keyActivities: formData.keyActivities ? formData.keyActivities.split('\n').map(a => a.trim()).filter(Boolean) : undefined,
+        subPrograms: formData.subPrograms ? formData.subPrograms.split(',').map(s => s.trim()).filter(Boolean) : undefined,
+        teamMembers: formData.teamMembers ? formData.teamMembers.split(',').map(t => t.trim()).filter(Boolean) : undefined,
+        progress: program?.progress || 0,
+        tasks: program?.tasks || 0,
+        completedTasks: program?.completedTasks || 0,
+      };
+
+      await onSave(programData);
+      
+      if (!isEditing && typeof window !== 'undefined') {
+        localStorage.removeItem('program_draft');
+      }
+    } catch (error) {
+      console.error('Failed to save program:', error);
+      alert('Failed to save program. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handleEditProgram = (program: Program) => {
-    setEditingProgram(program);
-    setShowProgramForm(true);
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    
+    if (errors[name]) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
   };
 
-  const handleCreateTask = (program: Program) => {
-    alert(`Creating new task for ${program.name} program. This would open the task creation form.`);
+  const handleBlur = (field: string) => {
+    setTouched(prev => ({ ...prev, [field]: true }));
+    validate();
   };
 
-  const handleViewDetails = (program: Program) => {
-    setSelectedProgram(program);
-  };
+  const handleCancel = () => {
+    const hasChanges = 
+      formData.name !== (program?.name || '') ||
+      formData.description !== (program?.description || '');
 
-  const canManagePrograms = hasPermission('canManagePrograms');
+    if (hasChanges) {
+      if (confirm('You have unsaved changes. Are you sure you want to cancel?')) {
+        onClose();
+      }
+    } else {
+      onClose();
+    }
+  };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b sticky top-0 bg-white z-10">
           <div>
-            <h2 className="text-2xl font-bold text-gray-800">GirlPower Programs</h2>
-            <p className="text-gray-600 mt-1">
-              Empowering adolescent girls and young women across {organization.location.county}
+            <h2 className="text-2xl font-bold text-gray-800">
+              {isEditing ? 'Edit Program' : 'Create New Program'}
+            </h2>
+            <p className="text-sm text-gray-600 mt-1">
+              {isEditing ? 'Update program details' : 'Set up a new GirlPower program'}
             </p>
           </div>
-          {canManagePrograms && (
-            <button 
-              onClick={() => {
-                setEditingProgram(undefined);
-                setShowProgramForm(true);
-              }}
-              className="flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"
-            >
-              <Plus size={20} />
-              New Program
-            </button>
-          )}
+          <button
+            onClick={handleCancel}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            type="button"
+          >
+            <X size={24} />
+          </button>
         </div>
-      </div>
 
-      {/* Filters */}
-      <div className="bg-white rounded-lg shadow p-4">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {/* Search */}
-          <div className="relative">
-            <Search size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search programs..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-            />
-          </div>
+        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          {/* Basic Information */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+              <FolderOpen size={20} className="text-purple-600" />
+              Basic Information
+            </h3>
 
-          {/* Category Filter */}
-          <div className="flex gap-2 overflow-x-auto">
-            {categories.map((category) => (
-              <button
-                key={category}
-                onClick={() => setSelectedCategory(category === 'All' ? '' : category)}
-                className={`px-4 py-2 rounded-lg whitespace-nowrap transition-colors ${
-                  (selectedCategory === category || (category === 'All' && !selectedCategory))
-                    ? 'bg-purple-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            {/* Program Name */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Program Name <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                onBlur={() => handleBlur('name')}
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors ${
+                  touched.name && errors.name ? 'border-red-500' : 'border-gray-300'
                 }`}
-              >
-                {category}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Programs Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredPrograms.map((program) => (
-          <ProgramCard
-            key={program.id}
-            program={program}
-            onSelect={handleCreateTask}
-            onViewDetails={handleViewDetails}
-            onEdit={handleEditProgram}
-            onDelete={handleDeleteProgram}
-            canEdit={canManagePrograms}
-          />
-        ))}
-      </div>
-
-      {filteredPrograms.length === 0 && (
-        <div className="bg-white rounded-lg shadow p-12 text-center">
-          <div className="text-gray-400 mb-4">
-            <Target size={48} className="mx-auto" />
-          </div>
-          <p className="text-gray-600">No programs found matching your criteria</p>
-        </div>
-      )}
-
-      {/* Program Statistics */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold mb-4">Overall Program Impact</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="text-center p-4 bg-purple-50 rounded-lg">
-            <div className="text-3xl font-bold text-purple-600">{programs.length}</div>
-            <div className="text-sm text-gray-600 mt-1">Active Programs</div>
-          </div>
-          <div className="text-center p-4 bg-blue-50 rounded-lg">
-            <div className="text-3xl font-bold text-blue-600">
-              {programs.reduce((acc, p) => acc + p.tasks, 0)}
-            </div>
-            <div className="text-sm text-gray-600 mt-1">Total Tasks</div>
-          </div>
-          <div className="text-center p-4 bg-green-50 rounded-lg">
-            <div className="text-3xl font-bold text-green-600">
-              {programs.reduce((acc, p) => acc + p.completedTasks, 0)}
-            </div>
-            <div className="text-sm text-gray-600 mt-1">Tasks Completed</div>
-          </div>
-          <div className="text-center p-4 bg-orange-50 rounded-lg">
-            <div className="text-3xl font-bold text-orange-600">
-              {Math.round(programs.reduce((acc, p) => acc + p.progress, 0) / programs.length)}%
-            </div>
-            <div className="text-sm text-gray-600 mt-1">Avg Progress</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Program Details Modal */}
-      {selectedProgram && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-6 border-b sticky top-0 bg-white z-10">
-              <h2 className="text-2xl font-bold text-gray-800">{selectedProgram.name}</h2>
-              <button
-                onClick={() => setSelectedProgram(null)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <X size={24} />
-              </button>
+                placeholder="e.g., Ndoto Curriculum Training"
+              />
+              {touched.name && errors.name && (
+                <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
+                  <AlertCircle size={14} />
+                  {errors.name}
+                </p>
+              )}
             </div>
 
-            <div className="p-6 space-y-6">
-              {/* Program Overview */}
+            {/* Category and Location */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <h3 className="text-lg font-semibold mb-2">Overview</h3>
-                <p className="text-gray-700">{selectedProgram.description}</p>
-              </div>
-
-              {/* Stats Grid */}
-              <div className="grid grid-cols-3 gap-4">
-                <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
-                  <div className="flex items-center gap-2 mb-2">
-                    <TrendingUp className="text-purple-600" size={20} />
-                    <span className="text-sm font-medium text-gray-600">Progress</span>
-                  </div>
-                  <div className="text-2xl font-bold text-purple-600">{selectedProgram.progress}%</div>
-                </div>
-                <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Target className="text-blue-600" size={20} />
-                    <span className="text-sm font-medium text-gray-600">Total Tasks</span>
-                  </div>
-                  <div className="text-2xl font-bold text-blue-600">{selectedProgram.tasks}</div>
-                </div>
-                <div className="bg-green-50 rounded-lg p-4 border border-green-200">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Calendar className="text-green-600" size={20} />
-                    <span className="text-sm font-medium text-gray-600">Completed</span>
-                  </div>
-                  <div className="text-2xl font-bold text-green-600">{selectedProgram.completedTasks}</div>
-                </div>
-              </div>
-
-              {/* Additional Details */}
-              <div className="space-y-4">
-                {selectedProgram.targetAudience && (
-                  <div>
-                    <label className="text-sm font-medium text-gray-600">Target Audience</label>
-                    <p className="text-gray-800">{selectedProgram.targetAudience}</p>
-                  </div>
-                )}
-
-                {selectedProgram.location && (
-                  <div>
-                    <label className="text-sm font-medium text-gray-600">Location</label>
-                    <p className="text-gray-800">{selectedProgram.location}</p>
-                  </div>
-                )}
-
-                {selectedProgram.goal && (
-                  <div>
-                    <label className="text-sm font-medium text-gray-600">Goal</label>
-                    <p className="text-gray-800">{selectedProgram.goal}</p>
-                  </div>
-                )}
-
-                {selectedProgram.keyActivities && selectedProgram.keyActivities.length > 0 && (
-                  <div>
-                    <label className="text-sm font-medium text-gray-600 mb-2 block">Key Activities</label>
-                    <ul className="list-disc list-inside space-y-1">
-                      {selectedProgram.keyActivities.map((activity, idx) => (
-                        <li key={idx} className="text-gray-700">{activity}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {selectedProgram.partners && selectedProgram.partners.length > 0 && (
-                  <div>
-                    <label className="text-sm font-medium text-gray-600">Partners</label>
-                    <p className="text-gray-800">{selectedProgram.partners.join(', ')}</p>
-                  </div>
-                )}
-              </div>
-
-              {/* Action Button */}
-              <div className="flex gap-3 pt-4 border-t">
-                <button
-                  onClick={() => {
-                    handleCreateTask(selectedProgram);
-                    setSelectedProgram(null);
-                  }}
-                  className="flex-1 bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors font-medium flex items-center justify-center gap-2"
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Category <span className="text-red-500">*</span>
+                </label>
+                <select
+                  name="category"
+                  value={formData.category}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 >
-                  <Plus size={20} />
-                  Create Task for this Program
-                </button>
-                <button
-                  onClick={() => setSelectedProgram(null)}
-                  className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                  {PROGRAM_CATEGORIES.map(cat => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <MapPin size={16} className="inline mr-1" />
+                  Location (Sub-County)
+                </label>
+                <select
+                  name="location"
+                  value={formData.location}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 >
-                  Close
-                </button>
+                  <option value="">All Bungoma County</option>
+                  {SUB_COUNTIES.map(county => (
+                    <option key={county} value={county}>{county}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Description */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <FileText size={16} className="inline mr-1" />
+                Description <span className="text-red-500">*</span>
+              </label>
+              <textarea
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                onBlur={() => handleBlur('description')}
+                rows={4}
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none ${
+                  touched.description && errors.description ? 'border-red-500' : 'border-gray-300'
+                }`}
+                placeholder="Describe the program's purpose, approach, and expected outcomes..."
+              />
+              {touched.description && errors.description && (
+                <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
+                  <AlertCircle size={14} />
+                  {errors.description}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Target & Goals */}
+          <div className="space-y-4 pt-4 border-t">
+            <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+              <Target size={20} className="text-purple-600" />
+              Target & Goals
+            </h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <Users size={16} className="inline mr-1" />
+                  Target Audience <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="targetAudience"
+                  value={formData.targetAudience}
+                  onChange={handleChange}
+                  onBlur={() => handleBlur('targetAudience')}
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+                    touched.targetAudience && errors.targetAudience ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                  placeholder="e.g., Adolescent girls aged 14-19"
+                />
+                {touched.targetAudience && errors.targetAudience && (
+                  <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
+                    <AlertCircle size={14} />
+                    {errors.targetAudience}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Program Goal
+                </label>
+                <input
+                  type="text"
+                  name="goal"
+                  value={formData.goal}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  placeholder="e.g., Reach 200 schools by December 2025"
+                />
               </div>
             </div>
           </div>
-        </div>
-      )}
 
-      {/* Program Form Modal */}
-      {showProgramForm && (
-        <ProgramForm
-          onClose={() => {
-            setShowProgramForm(false);
-            setEditingProgram(undefined);
-          }}
-          onSave={editingProgram ? handleUpdateProgram : handleCreateProgram}
-          program={editingProgram}
-        />
-      )}
+          {/* Timeline & Budget */}
+          <div className="space-y-4 pt-4 border-t">
+            <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+              <Calendar size={20} className="text-purple-600" />
+              Timeline & Budget
+            </h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Start Date
+                </label>
+                <input
+                  type="date"
+                  name="startDate"
+                  value={formData.startDate}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  End Date
+                </label>
+                <input
+                  type="date"
+                  name="endDate"
+                  value={formData.endDate}
+                  onChange={handleChange}
+                  onBlur={() => handleBlur('endDate')}
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+                    errors.endDate ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                />
+                {errors.endDate && (
+                  <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
+                    <AlertCircle size={14} />
+                    {errors.endDate}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Budget (KES)
+                </label>
+                <input
+                  type="text"
+                  name="budget"
+                  value={formData.budget}
+                  onChange={handleChange}
+                  onBlur={() => handleBlur('budget')}
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+                    errors.budget ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                  placeholder="e.g., 500000"
+                />
+                {errors.budget && (
+                  <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
+                    <AlertCircle size={14} />
+                    {errors.budget}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Additional Details */}
+          <div className="space-y-4 pt-4 border-t">
+            <h3 className="text-lg font-semibold text-gray-800">Additional Details</h3>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Key Activities (one per line)
+              </label>
+              <textarea
+                name="keyActivities"
+                value={formData.keyActivities}
+                onChange={handleChange}
+                rows={4}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                placeholder="3-month training sessions&#10;Peer education programs&#10;Community awareness campaigns"
+              />
+              <p className="mt-1 text-xs text-gray-500">Enter each activity on a new line</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Sub-Programs (comma-separated)
+                </label>
+                <input
+                  type="text"
+                  name="subPrograms"
+                  value={formData.subPrograms}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  placeholder="e.g., Ndoto Champs, In-School Ndoto"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Partners (comma-separated)
+                </label>
+                <input
+                  type="text"
+                  name="partners"
+                  value={formData.partners}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  placeholder="e.g., UNAIDS, NSDCC, Tiko Africa"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Team Members (comma-separated)
+              </label>
+              <input
+                type="text"
+                name="teamMembers"
+                value={formData.teamMembers}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                placeholder="e.g., Sarah K., Mary N., Grace O."
+              />
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex gap-3 pt-6 border-t">
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="flex-1 bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors font-medium flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isSubmitting ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save size={20} />
+                  {isEditing ? 'Update Program' : 'Create Program'}
+                </>
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={handleCancel}
+              disabled={isSubmitting}
+              className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium disabled:opacity-50"
+            >
+              Cancel
+            </button>
+          </div>
+
+          {/* Helper Text */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <p className="text-sm text-blue-800">
+              <strong>💡 Tip:</strong> Make sure to align your program with GirlPower&apos;s core focus areas: SRHR, HIV/AIDS, GBV Prevention, and Menstrual Health.
+            </p>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }
