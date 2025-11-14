@@ -1,8 +1,15 @@
+// src/services/api.ts - FIXED
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 
 interface ApiError {
   message: string;
   status: number;
+}
+
+interface UploadResponse {
+  url: string;
+  name: string;
+  size: number;
 }
 
 class ApiService {
@@ -85,8 +92,8 @@ class ApiService {
     return this.request<T>(endpoint, { method: 'DELETE' });
   }
 
-  // File upload
-  async uploadFile(endpoint: string, file: File): Promise<any> {
+  // File upload with proper typing
+  async uploadFile(endpoint: string, file: File): Promise<UploadResponse> {
     const formData = new FormData();
     formData.append('file', file);
 

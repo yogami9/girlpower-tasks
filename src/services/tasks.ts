@@ -1,14 +1,43 @@
+// src/services/tasks.ts - FIXED
 import { apiService } from './api';
 import { Task } from '@/types';
 
+// Proper type definitions
+interface TaskFilters {
+  program?: string;
+  status?: string;
+  priority?: string;
+  assignee?: string;
+  search?: string;
+}
+
+interface Comment {
+  id: string;
+  taskId: string;
+  author: string;
+  content: string;
+  timestamp: string;
+}
+
+interface Attachment {
+  id: string;
+  taskId: string;
+  name: string;
+  url: string;
+  size: number;
+  uploadedBy: string;
+  uploadedAt: string;
+}
+
+interface BulkUpdateData {
+  taskIds: string[];
+  status: string;
+}
+
 export const taskService = {
   // Get all tasks
-  getTasks: async (filters?: {
-    program?: string;
-    status?: string;
-    priority?: string;
-  }): Promise<Task[]> => {
-    const params = new URLSearchParams(filters as any);
+  getTasks: async (filters?: TaskFilters): Promise<Task[]> => {
+    const params = new URLSearchParams(filters as Record<string, string>);
     return apiService.get(`/tasks?${params}`);
   },
 
@@ -32,22 +61,22 @@ export const taskService = {
     return apiService.delete(`/tasks/${id}`);
   },
 
-  // Bulk operations
-  bulkUpdateStatus: (taskIds: string[], status: string): Promise<void> => {
-    return apiService.post('/tasks/bulk-update', { taskIds, status });
+  // Bulk operations with proper typing
+  bulkUpdateStatus: (data: BulkUpdateData): Promise<void> => {
+    return apiService.post('/tasks/bulk-update', data);
   },
 
-  // Task comments
-  getComments: (taskId: string): Promise<any[]> => {
+  // Task comments with proper typing
+  getComments: (taskId: string): Promise<Comment[]> => {
     return apiService.get(`/tasks/${taskId}/comments`);
   },
 
-  addComment: (taskId: string, content: string): Promise<any> => {
+  addComment: (taskId: string, content: string): Promise<Comment> => {
     return apiService.post(`/tasks/${taskId}/comments`, { content });
   },
 
-  // Task attachments
-  uploadAttachment: (taskId: string, file: File): Promise<any> => {
+  // Task attachments with proper typing
+  uploadAttachment: (taskId: string, file: File): Promise<Attachment> => {
     return apiService.uploadFile(`/tasks/${taskId}/attachments`, file);
   },
 };

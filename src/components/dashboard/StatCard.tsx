@@ -1,10 +1,10 @@
+// src/components/dashboard/StatCard.tsx - FIXED
 import React from 'react';
-import { LucideIcon } from 'lucide-react';
 
 interface StatCardProps {
   label: string;
   value: number;
-  icon: LucideIcon;
+  icon: React.ComponentType<{ size?: number; className?: string }>;
   color: string;
 }
 

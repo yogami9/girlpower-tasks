@@ -1,3 +1,5 @@
+// src/types/index.ts - FIXED
+
 // Task Management Types
 export type TaskStatus = 'completed' | 'in-progress' | 'overdue' | 'pending';
 export type TaskPriority = 'high' | 'medium' | 'low';
@@ -117,7 +119,8 @@ export interface Stats {
 export interface StatCardData {
   label: string;
   value: number | string;
-  icon: any;
+  // Replace 'any' with proper React element type
+  icon: React.ComponentType<{ size?: number; className?: string }>;
   color: string;
   change?: number;
   target?: number;
