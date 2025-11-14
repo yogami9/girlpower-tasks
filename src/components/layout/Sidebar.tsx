@@ -76,9 +76,9 @@ export default function Sidebar({ isOpen, currentView, onClose, onViewChange }: 
       
       {/* Sidebar */}
       <div className={`fixed left-0 top-0 h-full bg-gradient-to-b from-purple-800 to-purple-900 text-white transition-all duration-300 ${isOpen ? 'w-64' : 'w-0'} overflow-hidden z-20`}>
-        <div className="p-6 flex flex-col h-full">
+        <div className="p-6 flex flex-col h-full overflow-y-auto">
           {/* Header */}
-          <div className="mb-8">
+          <div className="mb-8 flex-shrink-0">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h1 className="text-2xl font-bold">GirlPower</h1>
@@ -96,9 +96,9 @@ export default function Sidebar({ isOpen, currentView, onClose, onViewChange }: 
                   <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center text-white font-semibold">
                     {user.name.charAt(0)}
                   </div>
-                  <div className="flex-1">
-                    <div className="font-medium text-sm">{user.name}</div>
-                    <div className="text-xs text-purple-200">{user.email}</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-sm truncate">{user.name}</div>
+                    <div className="text-xs text-purple-200 truncate">{user.email}</div>
                   </div>
                 </div>
                 <div className={`${roleBadge.color} text-xs font-semibold px-2 py-1 rounded-full text-center`}>
@@ -108,8 +108,8 @@ export default function Sidebar({ isOpen, currentView, onClose, onViewChange }: 
             )}
           </div>
 
-          {/* Navigation Menu */}
-          <nav className="space-y-1 flex-1">
+          {/* Navigation Menu - Scrollable */}
+          <nav className="space-y-1 flex-1 overflow-y-auto mb-4">
             {visibleMenuItems.map((item) => (
               <button
                 key={item.id}
@@ -133,7 +133,7 @@ export default function Sidebar({ isOpen, currentView, onClose, onViewChange }: 
           </nav>
 
           {/* Team Info Card */}
-          <div className="mb-4 p-4 bg-purple-700/50 rounded-lg backdrop-blur-sm border border-purple-600">
+          <div className="mb-4 p-4 bg-purple-700/50 rounded-lg backdrop-blur-sm border border-purple-600 flex-shrink-0">
             <div className="flex items-center gap-2 mb-3">
               <Users size={20} />
               <span className="font-semibold">Your Access</span>
@@ -181,14 +181,14 @@ export default function Sidebar({ isOpen, currentView, onClose, onViewChange }: 
           {/* Logout Button */}
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-red-600 hover:bg-red-700 transition-colors mb-4"
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-red-600 hover:bg-red-700 transition-colors mb-4 flex-shrink-0"
           >
             <LogOut size={20} />
             <span className="font-medium">Logout</span>
           </button>
 
           {/* Footer */}
-          <div className="pt-4 border-t border-purple-700">
+          <div className="pt-4 border-t border-purple-700 flex-shrink-0">
             <div className="text-xs text-purple-300">
               <p>© 2025 GirlPower</p>
               <p className="mt-1">Version 2.0.0</p>
