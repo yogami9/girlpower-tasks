@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Save, FolderOpen, Users, Target, MapPin, Calendar, FileText, AlertCircle } from 'lucide-react';
 import { Program, ProgramCategory } from '@/types';
-import { useAuth } from '@/context/AuthContext';
 
 interface ProgramFormProps {
   onClose: () => void;
@@ -33,7 +32,6 @@ const SUB_COUNTIES = [
 ];
 
 export default function ProgramForm({ onClose, onSave, program }: ProgramFormProps) {
-  const { user } = useAuth();
   const isEditing = !!program;
 
   const [formData, setFormData] = useState({
@@ -514,7 +512,7 @@ export default function ProgramForm({ onClose, onSave, program }: ProgramFormPro
           {/* Helper Text */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <p className="text-sm text-blue-800">
-              <strong>💡 Tip:</strong> Make sure to align your program with GirlPower's core focus areas: SRHR, HIV/AIDS, GBV Prevention, and Menstrual Health.
+              <strong>💡 Tip:</strong> Make sure to align your program with GirlPower&apos;s core focus areas: SRHR, HIV/AIDS, GBV Prevention, and Menstrual Health.
             </p>
           </div>
         </form>
