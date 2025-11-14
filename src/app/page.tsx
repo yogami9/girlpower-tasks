@@ -6,15 +6,18 @@ import Sidebar from '@/components/layout/Sidebar';
 import Header from '@/components/layout/Header';
 import Dashboard from '@/components/Dashboard';
 import ProgramsView from '@/components/programs/ProgramsView';
-import EnhancedTasksView from '@/components/tasks/EnhancedTasksView';
+import RoleBasedTasksView from '@/components/tasks/RoleBasedTasksView';
 import ReportsView from '@/components/reports/ReportsView';
 import AnalyticsDashboard from '@/components/analytics/AnalyticsDashboard';
 import CalendarView from '@/components/calendar/CalendarView';
 import NotificationPanel from '@/components/notifications/NotificationPanel';
+import AdminDashboard from '@/components/admin/AdminDashboard';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import { useAuth } from '@/context/AuthContext';
 import { tasks, programs } from '@/data/mockData';
 
 function MainApp() {
+  const { isAdmin, isStaff, isVolunteer, hasPermission } = useAuth();
   const [currentView, setCurrentView] = useState<ViewType>('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
@@ -22,17 +25,42 @@ function MainApp() {
   const renderView = () => {
     switch (currentView) {
       case 'dashboard':
-        return <Dashboard />;
+        // Admin sees AdminDashboard, others see regular Dashboard
+        return isAdmin ? <AdminDashboard /> : <Dashboard />;
+      
       case 'programs':
         return <ProgramsView />;
+      
       case 'tasks':
-        return <EnhancedTasksView initialTasks={tasks} programs={programs} />;
+        return <RoleBasedTasksView initialTasks={tasks} programs={programs} />;
+      
       case 'reports':
-        return <ReportsView />;
+        // Only Admin and Staff can view reports
+        if (hasPermission('canViewReports')) {
+          return <ReportsView />;
+        }
+        return (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-8 text-center">
+            <h3 className="text-lg font-semibold text-yellow-900 mb-2">Access Restricted</h3>
+            <p className="text-yellow-700">You don't have permission to view reports. Please contact your administrator.</p>
+          </div>
+        );
+      
       case 'analytics':
-        return <AnalyticsDashboard />;
+        // Only Admin and Staff can view analytics
+        if (isAdmin || isStaff) {
+          return <AnalyticsDashboard />;
+        }
+        return (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-8 text-center">
+            <h3 className="text-lg font-semibold text-yellow-900 mb-2">Access Restricted</h3>
+            <p className="text-yellow-700">You don't have permission to view analytics. Please contact your administrator.</p>
+          </div>
+        );
+      
       case 'calendar':
         return <CalendarView tasks={tasks} />;
+      
       default:
         return <Dashboard />;
     }

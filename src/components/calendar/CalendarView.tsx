@@ -1,16 +1,22 @@
-
 'use client';
 
 import React, { useState } from 'react';
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Info } from 'lucide-react';
 import { Task } from '@/types';
+import { useAuth } from '@/context/AuthContext';
 
 interface CalendarViewProps {
   tasks: Task[];
 }
 
 export default function CalendarView({ tasks }: CalendarViewProps) {
+  const { user, isVolunteer } = useAuth();
   const [currentDate, setCurrentDate] = useState(new Date());
+
+  // Filter tasks based on role
+  const visibleTasks = isVolunteer && user
+    ? tasks.filter(t => t.assignee === user.name)
+    : tasks;
 
   const monthNames = [
     'January', 'February', 'March', 'April', 'May', 'June',
@@ -35,7 +41,7 @@ export default function CalendarView({ tasks }: CalendarViewProps) {
 
   const getTasksForDate = (day: number) => {
     const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    return tasks.filter(task => task.dueDate === dateStr);
+    return visibleTasks.filter(task => task.dueDate === dateStr);
   };
 
   const renderCalendar = () => {
@@ -60,31 +66,32 @@ export default function CalendarView({ tasks }: CalendarViewProps) {
         <div
           key={day}
           className={`min-h-[100px] border border-gray-200 p-2 ${
-            isToday ? 'bg-purple-50' : 'bg-white'
+            isToday ? 'bg-purple-50 ring-2 ring-purple-400' : 'bg-white'
           } hover:bg-gray-50 transition-colors`}
         >
           <div className={`text-sm font-semibold mb-2 ${
             isToday ? 'text-purple-600' : 'text-gray-700'
           }`}>
             {day}
+            {isToday && <span className="ml-1 text-xs">(Today)</span>}
           </div>
           <div className="space-y-1">
             {dayTasks.slice(0, 3).map((task) => (
               <div
                 key={task.id}
-                className={`text-xs p-1 rounded truncate ${
+                className={`text-xs p-1 rounded truncate cursor-pointer hover:scale-105 transition-transform ${
                   task.status === 'completed' ? 'bg-green-100 text-green-800' :
                   task.status === 'in-progress' ? 'bg-blue-100 text-blue-800' :
                   task.status === 'overdue' ? 'bg-red-100 text-red-800' :
                   'bg-yellow-100 text-yellow-800'
                 }`}
-                title={task.title}
+                title={`${task.title} - ${task.assignee}`}
               >
                 {task.title}
               </div>
             ))}
             {dayTasks.length > 3 && (
-              <div className="text-xs text-gray-500 pl-1">
+              <div className="text-xs text-gray-500 pl-1 font-medium">
                 +{dayTasks.length - 3} more
               </div>
             )}
@@ -98,19 +105,63 @@ export default function CalendarView({ tasks }: CalendarViewProps) {
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-          <CalendarIcon size={28} />
-          Calendar View
-        </h2>
+        <div>
+          <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+            <CalendarIcon size={28} />
+            Calendar View
+          </h2>
+          <p className="text-gray-600 mt-1">
+            {isVolunteer ? 'Your scheduled tasks' : 'All scheduled tasks'}
+          </p>
+        </div>
       </div>
 
+      {/* Role info banner for volunteers */}
+      {isVolunteer && (
+        <div className="bg-pink-50 border border-pink-200 rounded-lg p-4 flex items-start gap-3">
+          <Info className="text-pink-600 flex-shrink-0 mt-0.5" size={20} />
+          <div className="text-sm text-pink-800">
+            <strong>Volunteer View:</strong> You're seeing only your assigned tasks. Contact your supervisor if you need to view team schedules.
+          </div>
+        </div>
+      )}
+
+      {/* Stats Summary */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="bg-white rounded-lg shadow p-4">
+          <div className="text-2xl font-bold text-gray-800">{visibleTasks.length}</div>
+          <div className="text-sm text-gray-600">Total Tasks</div>
+        </div>
+        <div className="bg-white rounded-lg shadow p-4">
+          <div className="text-2xl font-bold text-green-600">
+            {visibleTasks.filter(t => t.status === 'completed').length}
+          </div>
+          <div className="text-sm text-gray-600">Completed</div>
+        </div>
+        <div className="bg-white rounded-lg shadow p-4">
+          <div className="text-2xl font-bold text-blue-600">
+            {visibleTasks.filter(t => t.status === 'in-progress').length}
+          </div>
+          <div className="text-sm text-gray-600">In Progress</div>
+        </div>
+        <div className="bg-white rounded-lg shadow p-4">
+          <div className="text-2xl font-bold text-red-600">
+            {visibleTasks.filter(t => t.status === 'overdue').length}
+          </div>
+          <div className="text-sm text-gray-600">Overdue</div>
+        </div>
+      </div>
+
+      {/* Calendar */}
       <div className="bg-white rounded-lg shadow p-6">
         {/* Calendar Header */}
         <div className="flex items-center justify-between mb-6">
           <button
             onClick={previousMonth}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            aria-label="Previous month"
           >
             <ChevronLeft size={24} />
           </button>
@@ -120,6 +171,7 @@ export default function CalendarView({ tasks }: CalendarViewProps) {
           <button
             onClick={nextMonth}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            aria-label="Next month"
           >
             <ChevronRight size={24} />
           </button>
