@@ -1,8 +1,7 @@
-// src/components/programs/ProgramsView.tsx - FIXED
 'use client';
 
 import React, { useState } from 'react';
-import { Plus, Search, Users, School, Heart, Target } from 'lucide-react';
+import { Plus, Search, Users, School, Heart, Target, X, TrendingUp, Calendar } from 'lucide-react';
 import { programs } from '@/data/mockData';
 import { organization } from '@/data/organizationData';
 import { Program } from '@/types';
@@ -10,9 +9,10 @@ import { Program } from '@/types';
 interface ProgramCardProps {
   program: Program;
   onSelect: (program: Program) => void;
+  onViewDetails: (program: Program) => void;
 }
 
-function ProgramCard({ program, onSelect }: ProgramCardProps) {
+function ProgramCard({ program, onSelect, onViewDetails }: ProgramCardProps) {
   const getCategoryIcon = (category: string) => {
     switch (category) {
       case 'Education': return <School size={24} className="text-purple-600" />;
@@ -102,13 +102,21 @@ function ProgramCard({ program, onSelect }: ProgramCardProps) {
         </div>
       )}
 
-      {/* Action Button */}
-      <button
-        onClick={() => onSelect(program)}
-        className="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition-colors font-medium"
-      >
-        View Details →
-      </button>
+      {/* Action Buttons */}
+      <div className="flex gap-2">
+        <button
+          onClick={() => onViewDetails(program)}
+          className="flex-1 bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition-colors font-medium"
+        >
+          View Details →
+        </button>
+        <button
+          onClick={() => onSelect(program)}
+          className="px-4 py-2 border border-purple-600 text-purple-600 rounded-lg hover:bg-purple-50 transition-colors font-medium"
+        >
+          <Plus size={20} />
+        </button>
+      </div>
     </div>
   );
 }
@@ -116,8 +124,7 @@ function ProgramCard({ program, onSelect }: ProgramCardProps) {
 export default function ProgramsView() {
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState('');
-  // FIX: Remove unused variable
-  // const [selectedProgram, setSelectedProgram] = useState<Program | null>(null);
+  const [selectedProgram, setSelectedProgram] = useState<Program | null>(null);
 
   const categories = ['All', 'Education', 'Health', 'Advocacy', 'Service Delivery'];
 
@@ -127,6 +134,14 @@ export default function ProgramsView() {
                          program.description.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCategory && matchesSearch;
   });
+
+  const handleCreateTask = (program: Program) => {
+    alert(`Creating new task for ${program.name} program. This would open the task creation form.`);
+  };
+
+  const handleViewDetails = (program: Program) => {
+    setSelectedProgram(program);
+  };
 
   return (
     <div className="space-y-6">
@@ -139,7 +154,10 @@ export default function ProgramsView() {
               Empowering adolescent girls and young women across {organization.location.county}
             </p>
           </div>
-          <button className="flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors">
+          <button 
+            onClick={() => alert('This would open a form to create a new program task')}
+            className="flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"
+          >
             <Plus size={20} />
             New Program Task
           </button>
@@ -186,7 +204,8 @@ export default function ProgramsView() {
           <ProgramCard
             key={program.id}
             program={program}
-            onSelect={() => {}} // FIX: Provide empty function instead of unused state
+            onSelect={handleCreateTask}
+            onViewDetails={handleViewDetails}
           />
         ))}
       </div>
@@ -228,6 +247,118 @@ export default function ProgramsView() {
           </div>
         </div>
       </div>
+
+      {/* Program Details Modal */}
+      {selectedProgram && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-6 border-b sticky top-0 bg-white z-10">
+              <h2 className="text-2xl font-bold text-gray-800">{selectedProgram.name}</h2>
+              <button
+                onClick={() => setSelectedProgram(null)}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-6">
+              {/* Program Overview */}
+              <div>
+                <h3 className="text-lg font-semibold mb-2">Overview</h3>
+                <p className="text-gray-700">{selectedProgram.description}</p>
+              </div>
+
+              {/* Stats Grid */}
+              <div className="grid grid-cols-3 gap-4">
+                <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <TrendingUp className="text-purple-600" size={20} />
+                    <span className="text-sm font-medium text-gray-600">Progress</span>
+                  </div>
+                  <div className="text-2xl font-bold text-purple-600">{selectedProgram.progress}%</div>
+                </div>
+                <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Target className="text-blue-600" size={20} />
+                    <span className="text-sm font-medium text-gray-600">Total Tasks</span>
+                  </div>
+                  <div className="text-2xl font-bold text-blue-600">{selectedProgram.tasks}</div>
+                </div>
+                <div className="bg-green-50 rounded-lg p-4 border border-green-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Calendar className="text-green-600" size={20} />
+                    <span className="text-sm font-medium text-gray-600">Completed</span>
+                  </div>
+                  <div className="text-2xl font-bold text-green-600">{selectedProgram.completedTasks}</div>
+                </div>
+              </div>
+
+              {/* Additional Details */}
+              <div className="space-y-4">
+                {selectedProgram.targetAudience && (
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Target Audience</label>
+                    <p className="text-gray-800">{selectedProgram.targetAudience}</p>
+                  </div>
+                )}
+
+                {selectedProgram.location && (
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Location</label>
+                    <p className="text-gray-800">{selectedProgram.location}</p>
+                  </div>
+                )}
+
+                {selectedProgram.goal && (
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Goal</label>
+                    <p className="text-gray-800">{selectedProgram.goal}</p>
+                  </div>
+                )}
+
+                {selectedProgram.keyActivities && selectedProgram.keyActivities.length > 0 && (
+                  <div>
+                    <label className="text-sm font-medium text-gray-600 mb-2 block">Key Activities</label>
+                    <ul className="list-disc list-inside space-y-1">
+                      {selectedProgram.keyActivities.map((activity, idx) => (
+                        <li key={idx} className="text-gray-700">{activity}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {selectedProgram.partners && selectedProgram.partners.length > 0 && (
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Partners</label>
+                    <p className="text-gray-800">{selectedProgram.partners.join(', ')}</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Action Button */}
+              <div className="flex gap-3 pt-4 border-t">
+                <button
+                  onClick={() => {
+                    handleCreateTask(selectedProgram);
+                    setSelectedProgram(null);
+                  }}
+                  className="flex-1 bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors font-medium flex items-center justify-center gap-2"
+                >
+                  <Plus size={20} />
+                  Create Task for this Program
+                </button>
+                <button
+                  onClick={() => setSelectedProgram(null)}
+                  className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
