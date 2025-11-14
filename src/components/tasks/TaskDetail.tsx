@@ -1,10 +1,10 @@
-// src/components/tasks/TaskDetail.tsx - FIXED
+// src/components/tasks/TaskDetail.tsx - FULLY FIXED
 'use client';
 
 import { useState } from 'react';
 import { X, Paperclip, MessageSquare, Clock, User, Calendar } from 'lucide-react';
 import { Task } from '@/types';
-import { useTask } from '@/./hooks/useTasks';
+import { useTask } from '@/hooks/useTasks';
 
 interface TaskDetailProps {
   taskId: string;
@@ -23,7 +23,14 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
     );
   }
 
-  if (!task) return null;
+  // FIX: Proper null check with early return
+  if (!task) {
+    return (
+      <div className="flex items-center justify-center p-12">
+        <p className="text-gray-500">Task not found</p>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -67,7 +74,6 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6">
           {activeTab === 'details' && <TaskDetails task={task} />}
-          {/* FIX: Remove unused taskId prop */}
           {activeTab === 'comments' && <TaskComments />}
           {activeTab === 'attachments' && <TaskAttachments />}
         </div>
@@ -163,7 +169,6 @@ function TaskDetails({ task }: { task: Task }) {
   );
 }
 
-// FIX: Remove unused taskId parameter
 function TaskComments() {
   const [comment, setComment] = useState('');
 
@@ -196,7 +201,6 @@ function TaskComments() {
               <span className="font-medium">Sarah K.</span>
               <span className="text-xs text-gray-500">2 hours ago</span>
             </div>
-            {/* FIX: Escaped apostrophe */}
             <p className="text-sm text-gray-700">
               Great progress on this task! Let&apos;s aim to complete it by end of week.
             </p>
@@ -207,12 +211,10 @@ function TaskComments() {
   );
 }
 
-// FIX: Remove unused taskId parameter
 function TaskAttachments() {
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files) {
-      // Handle file upload
       console.log('Uploading files:', files);
     }
   };
