@@ -1,4 +1,4 @@
-// src/services/tasks.ts - FIXED
+// src/services/tasks.ts - FIXED TYPE MISMATCH
 import { apiService } from './api';
 import { Task } from '@/types';
 
@@ -75,8 +75,19 @@ export const taskService = {
     return apiService.post(`/tasks/${taskId}/comments`, { content });
   },
 
-  // Task attachments with proper typing
-  uploadAttachment: (taskId: string, file: File): Promise<Attachment> => {
-    return apiService.uploadFile(`/tasks/${taskId}/attachments`, file);
+  // Task attachments - FIXED: Transform UploadResponse to Attachment
+  uploadAttachment: async (taskId: string, file: File): Promise<Attachment> => {
+    const uploadResponse = await apiService.uploadFile(`/tasks/${taskId}/attachments`, file);
+    
+    // Transform UploadResponse to Attachment format
+    return {
+      id: Date.now().toString(), // Generate temporary ID
+      taskId,
+      name: uploadResponse.name,
+      url: uploadResponse.url,
+      size: uploadResponse.size,
+      uploadedBy: 'current-user', // This should come from auth context
+      uploadedAt: new Date().toISOString(),
+    };
   },
 };
