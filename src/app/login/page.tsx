@@ -1,9 +1,10 @@
+// src/app/login/page.tsx - FIXED
 'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { LogIn, Mail, Lock, AlertCircle } from 'lucide-react';
-import { authService } from '@/services/auth';
+import { authService } from '@/./services/auth';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -19,8 +20,10 @@ export default function LoginPage() {
     try {
       await authService.login(formData.email, formData.password);
       router.push('/');
-    } catch (err: any) {
-      setError(err.message || 'Invalid credentials');
+    } catch (err) {
+      // FIX: Proper error typing
+      const errorMessage = err instanceof Error ? err.message : 'Invalid credentials';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -114,9 +117,9 @@ export default function LoginPage() {
             </button>
           </form>
 
-          {/* Sign Up Link */}
+          {/* Sign Up Link - FIX: Escaped apostrophe */}
           <div className="mt-6 text-center">
-            <span className="text-gray-600">Don't have an account? </span>
+            <span className="text-gray-600">Don&apos;t have an account? </span>
             <a href="/register" className="text-purple-600 hover:text-purple-700 font-medium">
               Sign up
             </a>

@@ -1,14 +1,15 @@
-// src/components/programs/ProgramsView.tsx - Real GirlPower Programs
+// src/components/programs/ProgramsView.tsx - FIXED
 'use client';
 
 import React, { useState } from 'react';
 import { Plus, Search, Users, School, Heart, Target } from 'lucide-react';
 import { programs } from '@/data/mockData';
 import { organization } from '@/data/organizationData';
+import { Program } from '@/types';
 
 interface ProgramCardProps {
-  program: any;
-  onSelect: (program: any) => void;
+  program: Program;
+  onSelect: (program: Program) => void;
 }
 
 function ProgramCard({ program, onSelect }: ProgramCardProps) {
@@ -85,18 +86,18 @@ function ProgramCard({ program, onSelect }: ProgramCardProps) {
       )}
 
       {/* Partner Info */}
-      {program.partner && (
+      {program.partners && program.partners.length > 0 && (
         <div className="mb-4 p-2 bg-white rounded border border-gray-200">
           <div className="text-xs text-gray-600">Partnership with:</div>
-          <div className="text-sm font-medium text-gray-800">{program.partner}</div>
+          <div className="text-sm font-medium text-gray-800">{program.partners.join(', ')}</div>
         </div>
       )}
 
       {/* Target Info */}
-      {program.target && (
+      {program.goal && (
         <div className="mb-4 p-2 bg-yellow-50 rounded border border-yellow-200">
           <div className="text-xs font-medium text-yellow-800">
-            🎯 Target: {program.target}
+            🎯 Target: {program.goal}
           </div>
         </div>
       )}
@@ -115,7 +116,8 @@ function ProgramCard({ program, onSelect }: ProgramCardProps) {
 export default function ProgramsView() {
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedProgram, setSelectedProgram] = useState<any>(null);
+  // FIX: Remove unused variable
+  // const [selectedProgram, setSelectedProgram] = useState<Program | null>(null);
 
   const categories = ['All', 'Education', 'Health', 'Advocacy', 'Service Delivery'];
 
@@ -184,7 +186,7 @@ export default function ProgramsView() {
           <ProgramCard
             key={program.id}
             program={program}
-            onSelect={setSelectedProgram}
+            onSelect={() => {}} // FIX: Provide empty function instead of unused state
           />
         ))}
       </div>

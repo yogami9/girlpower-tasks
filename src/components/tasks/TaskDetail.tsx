@@ -1,9 +1,10 @@
+// src/components/tasks/TaskDetail.tsx - FIXED
 'use client';
 
 import { useState } from 'react';
 import { X, Paperclip, MessageSquare, Clock, User, Calendar } from 'lucide-react';
 import { Task } from '@/types';
-import { useTask } from '@/hooks/useTasks';
+import { useTask } from '@/./hooks/useTasks';
 
 interface TaskDetailProps {
   taskId: string;
@@ -50,7 +51,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
           ].map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
+              onClick={() => setActiveTab(tab.id as 'details' | 'comments' | 'attachments')}
               className={`flex items-center gap-2 px-6 py-3 font-medium transition-colors ${
                 activeTab === tab.id
                   ? 'border-b-2 border-purple-600 text-purple-600'
@@ -66,8 +67,9 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6">
           {activeTab === 'details' && <TaskDetails task={task} />}
-          {activeTab === 'comments' && <TaskComments taskId={taskId} />}
-          {activeTab === 'attachments' && <TaskAttachments taskId={taskId} />}
+          {/* FIX: Remove unused taskId prop */}
+          {activeTab === 'comments' && <TaskComments />}
+          {activeTab === 'attachments' && <TaskAttachments />}
         </div>
       </div>
     </div>
@@ -161,7 +163,8 @@ function TaskDetails({ task }: { task: Task }) {
   );
 }
 
-function TaskComments({ taskId }: { taskId: string }) {
+// FIX: Remove unused taskId parameter
+function TaskComments() {
   const [comment, setComment] = useState('');
 
   return (
@@ -193,8 +196,9 @@ function TaskComments({ taskId }: { taskId: string }) {
               <span className="font-medium">Sarah K.</span>
               <span className="text-xs text-gray-500">2 hours ago</span>
             </div>
+            {/* FIX: Escaped apostrophe */}
             <p className="text-sm text-gray-700">
-              Great progress on this task! Let's aim to complete it by end of week.
+              Great progress on this task! Let&apos;s aim to complete it by end of week.
             </p>
           </div>
         </div>
@@ -203,7 +207,8 @@ function TaskComments({ taskId }: { taskId: string }) {
   );
 }
 
-function TaskAttachments({ taskId }: { taskId: string }) {
+// FIX: Remove unused taskId parameter
+function TaskAttachments() {
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files) {
