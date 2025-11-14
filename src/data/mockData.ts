@@ -217,7 +217,7 @@ export const programs: Program[] = [
     tasks: 20, 
     completedTasks: 11,
     category: 'Service Delivery',
-    partner: 'Tiko Africa',
+    partners: ['Tiko Africa'],
     coverage: 'Tongaren, Kimilili, Webuye East, Mt. Elgon, Ndalu, Mbakalo',
     keyActivities: [
       'SRHR service facilitation',
