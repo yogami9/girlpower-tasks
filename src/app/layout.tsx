@@ -1,4 +1,4 @@
-// src/app/layout.tsx - Updated for GirlPower
+// src/app/layout.tsx - FIXED
 import type { Metadata } from 'next';
 import './globals.css';
 import { organization } from '@/data/organizationData';
@@ -19,11 +19,11 @@ export const metadata: Metadata = {
     'Teen Pregnancy',
     'Empowerment'
   ],
-  authors: [{ name: organization.name, url: organization.website }],
+  authors: [{ name: organization.name, url: organization.contact.website }],
   openGraph: {
     title: organization.name,
     description: organization.mission,
-    url: organization.website,
+    url: organization.contact.website,
     siteName: organization.shortName,
     locale: 'en_KE',
     type: 'website',
