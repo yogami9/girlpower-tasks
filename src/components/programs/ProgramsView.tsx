@@ -1,18 +1,23 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Plus, Search, Users, School, Heart, Target, X, TrendingUp, Calendar } from 'lucide-react';
-import { programs } from '@/data/mockData';
+import { Plus, Search, Users, School, Heart, Target, X, TrendingUp, Calendar, Edit, Trash2 } from 'lucide-react';
+import { programs as initialPrograms } from '@/data/mockData';
 import { organization } from '@/data/organizationData';
 import { Program } from '@/types';
+import { useAuth } from '@/context/AuthContext';
+import ProgramForm from './ProgramForm';
 
 interface ProgramCardProps {
   program: Program;
   onSelect: (program: Program) => void;
   onViewDetails: (program: Program) => void;
+  onEdit: (program: Program) => void;
+  onDelete: (program: Program) => void;
+  canEdit: boolean;
 }
 
-function ProgramCard({ program, onSelect, onViewDetails }: ProgramCardProps) {
+function ProgramCard({ program, onSelect, onViewDetails, onEdit, onDelete, canEdit }: ProgramCardProps) {
   const getCategoryIcon = (category: string) => {
     switch (category) {
       case 'Education': return <School size={24} className="text-purple-600" />;
@@ -45,6 +50,30 @@ function ProgramCard({ program, onSelect, onViewDetails }: ProgramCardProps) {
             </span>
           </div>
         </div>
+        {canEdit && (
+          <div className="flex gap-2">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit(program);
+              }}
+              className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+              title="Edit program"
+            >
+              <Edit size={16} />
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(program);
+              }}
+              className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+              title="Delete program"
+            >
+              <Trash2 size={16} />
+            </button>
+          </div>
+        )}
       </div>
 
       <p className="text-gray-600 text-sm mb-4 line-clamp-2">{program.description}</p>
@@ -122,11 +151,15 @@ function ProgramCard({ program, onSelect, onViewDetails }: ProgramCardProps) {
 }
 
 export default function ProgramsView() {
+  const { hasPermission } = useAuth();
+  const [programs, setPrograms] = useState<Program[]>(initialPrograms);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedProgram, setSelectedProgram] = useState<Program | null>(null);
+  const [showProgramForm, setShowProgramForm] = useState(false);
+  const [editingProgram, setEditingProgram] = useState<Program | undefined>();
 
-  const categories = ['All', 'Education', 'Health', 'Advocacy', 'Service Delivery'];
+  const categories = ['All', 'Education', 'Health', 'Advocacy', 'Service Delivery', 'Community Engagement', 'Empowerment'];
 
   const filteredPrograms = programs.filter(program => {
     const matchesCategory = !selectedCategory || selectedCategory === 'All' || program.category === selectedCategory;
@@ -135,6 +168,44 @@ export default function ProgramsView() {
     return matchesCategory && matchesSearch;
   });
 
+  const handleCreateProgram = (programData: Partial<Program>) => {
+    const newProgram: Program = {
+      id: Date.now().toString(),
+      name: programData.name!,
+      description: programData.description!,
+      category: programData.category!,
+      progress: 0,
+      tasks: 0,
+      completedTasks: 0,
+      ...programData,
+    };
+
+    setPrograms(prev => [...prev, newProgram]);
+    setShowProgramForm(false);
+    alert(`Program "${newProgram.name}" created successfully!`);
+  };
+
+  const handleUpdateProgram = (programData: Partial<Program>) => {
+    setPrograms(prev => prev.map(p => 
+      p.id === editingProgram?.id ? { ...p, ...programData } : p
+    ));
+    setEditingProgram(undefined);
+    setShowProgramForm(false);
+    alert('Program updated successfully!');
+  };
+
+  const handleDeleteProgram = (program: Program) => {
+    if (confirm(`Are you sure you want to delete "${program.name}"? This action cannot be undone.`)) {
+      setPrograms(prev => prev.filter(p => p.id !== program.id));
+      alert('Program deleted successfully!');
+    }
+  };
+
+  const handleEditProgram = (program: Program) => {
+    setEditingProgram(program);
+    setShowProgramForm(true);
+  };
+
   const handleCreateTask = (program: Program) => {
     alert(`Creating new task for ${program.name} program. This would open the task creation form.`);
   };
@@ -142,6 +213,8 @@ export default function ProgramsView() {
   const handleViewDetails = (program: Program) => {
     setSelectedProgram(program);
   };
+
+  const canManagePrograms = hasPermission('canManagePrograms');
 
   return (
     <div className="space-y-6">
@@ -154,13 +227,18 @@ export default function ProgramsView() {
               Empowering adolescent girls and young women across {organization.location.county}
             </p>
           </div>
-          <button 
-            onClick={() => alert('This would open a form to create a new program task')}
-            className="flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"
-          >
-            <Plus size={20} />
-            New Program Task
-          </button>
+          {canManagePrograms && (
+            <button 
+              onClick={() => {
+                setEditingProgram(undefined);
+                setShowProgramForm(true);
+              }}
+              className="flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"
+            >
+              <Plus size={20} />
+              New Program
+            </button>
+          )}
         </div>
       </div>
 
@@ -206,6 +284,9 @@ export default function ProgramsView() {
             program={program}
             onSelect={handleCreateTask}
             onViewDetails={handleViewDetails}
+            onEdit={handleEditProgram}
+            onDelete={handleDeleteProgram}
+            canEdit={canManagePrograms}
           />
         ))}
       </div>
@@ -358,6 +439,18 @@ export default function ProgramsView() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Program Form Modal */}
+      {showProgramForm && (
+        <ProgramForm
+          onClose={() => {
+            setShowProgramForm(false);
+            setEditingProgram(undefined);
+          }}
+          onSave={editingProgram ? handleUpdateProgram : handleCreateProgram}
+          program={editingProgram}
+        />
       )}
     </div>
   );
