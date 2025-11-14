@@ -1,4 +1,3 @@
-
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 
 interface ApiError {
@@ -11,11 +10,13 @@ class ApiService {
 
   setToken(token: string) {
     this.token = token;
-    localStorage.setItem('auth_token', token);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('auth_token', token);
+    }
   }
 
   getToken(): string | null {
-    if (!this.token) {
+    if (!this.token && typeof window !== 'undefined') {
       this.token = localStorage.getItem('auth_token');
     }
     return this.token;
@@ -23,7 +24,9 @@ class ApiService {
 
   clearToken() {
     this.token = null;
-    localStorage.removeItem('auth_token');
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('auth_token');
+    }
   }
 
   private async request<T>(
@@ -102,146 +105,3 @@ class ApiService {
 }
 
 export const apiService = new ApiService();
-
-// src/services/tasks.ts
-import { apiService } from './api';
-import { Task } from '@/types';
-
-export const taskService = {
-  // Get all tasks
-  getTasks: async (filters?: {
-    program?: string;
-    status?: string;
-    priority?: string;
-  }): Promise<Task[]> => {
-    const params = new URLSearchParams(filters as any);
-    return apiService.get(`/tasks?${params}`);
-  },
-
-  // Get single task
-  getTask: (id: string): Promise<Task> => {
-    return apiService.get(`/tasks/${id}`);
-  },
-
-  // Create task
-  createTask: (data: Partial<Task>): Promise<Task> => {
-    return apiService.post('/tasks', data);
-  },
-
-  // Update task
-  updateTask: (id: string, data: Partial<Task>): Promise<Task> => {
-    return apiService.put(`/tasks/${id}`, data);
-  },
-
-  // Delete task
-  deleteTask: (id: string): Promise<void> => {
-    return apiService.delete(`/tasks/${id}`);
-  },
-
-  // Bulk operations
-  bulkUpdateStatus: (taskIds: string[], status: string): Promise<void> => {
-    return apiService.post('/tasks/bulk-update', { taskIds, status });
-  },
-
-  // Task comments
-  getComments: (taskId: string): Promise<any[]> => {
-    return apiService.get(`/tasks/${taskId}/comments`);
-  },
-
-  addComment: (taskId: string, content: string): Promise<any> => {
-    return apiService.post(`/tasks/${taskId}/comments`, { content });
-  },
-
-  // Task attachments
-  uploadAttachment: (taskId: string, file: File): Promise<any> => {
-    return apiService.uploadFile(`/tasks/${taskId}/attachments`, file);
-  },
-};
-
-// src/services/auth.ts
-import { apiService } from './api';
-
-export const authService = {
-  login: async (email: string, password: string) => {
-    const response = await apiService.post<{ token: string; user: any }>(
-      '/auth/login',
-      { email, password }
-    );
-    apiService.setToken(response.token);
-    return response;
-  },
-
-  register: async (data: {
-    name: string;
-    email: string;
-    password: string;
-  }) => {
-    return apiService.post('/auth/register', data);
-  },
-
-  logout: () => {
-    apiService.clearToken();
-  },
-
-  getCurrentUser: async () => {
-    return apiService.get('/auth/me');
-  },
-
-  updateProfile: async (data: any) => {
-    return apiService.put('/auth/profile', data);
-  },
-};
-
-// src/hooks/useTasks.ts - React Query integration
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { taskService } from '@/services/tasks';
-import { Task } from '@/types';
-
-export function useTasks(filters?: any) {
-  return useQuery({
-    queryKey: ['tasks', filters],
-    queryFn: () => taskService.getTasks(filters),
-  });
-}
-
-export function useTask(id: string) {
-  return useQuery({
-    queryKey: ['task', id],
-    queryFn: () => taskService.getTask(id),
-    enabled: !!id,
-  });
-}
-
-export function useCreateTask() {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: (data: Partial<Task>) => taskService.createTask(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tasks'] });
-    },
-  });
-}
-
-export function useUpdateTask() {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<Task> }) =>
-      taskService.updateTask(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tasks'] });
-    },
-  });
-}
-
-export function useDeleteTask() {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: (id: string) => taskService.deleteTask(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tasks'] });
-    },
-  });
-}
